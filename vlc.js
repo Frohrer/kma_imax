@@ -8,29 +8,76 @@ const xml2js = require('xml2js');
 require('dotenv').config();
 
 const vlcAPI = function (username, password, command) {
-	const options = {
-		url: `http://${process.env.VLC_IP}/requests/status.xml?command=${command}`,
-		auth: {
-			username: username,
-			password: password
-		}
-	};
+	return new Promise((resolve,reject) => {
+		const options = {
+			url: `http://${process.env.VLC_IP}/requests/status.xml?command=${command}`,
+			auth: {
+				username: username,
+				password: password
+			}
+		};
 
-	request.get(options, (err, res, body) => {
-		if (err) {
-			console.error(err);
-		} else {
-			xml2js.parseString(body, (err, result) => {
-				if (err) {
-					console.error(err);
-				} else {
-					console.log(`Currently playing ${result.root.information[0].category[0].info[1]._}.`);
-				}
-			});
-		}
-	});
+		request.get(options, (err, res, body) => {
+			if (err) {
+				console.error(err);
+			} else {
+				xml2js.parseString(body, {preserveChildrenOrder:true}, (err, result) => {
+					if (err) {
+						console.error(err);
+					} else {
+						try {
+							resolve(result.root.information[0].category[0].info[1]._)
+						} catch (e) {
+							resolve('Unknown')
+						}
+					}
+				});
+			}
+		});
+	})
+}
+
+const vlcGetCurrent = function (username, password) {
+	return new Promise((resolve,reject) => {
+		const options = {
+			url: `http://${process.env.VLC_IP}/requests/status.xml`,
+			auth: {
+				username: username,
+				password: password
+			}
+		};
+
+		request.get(options, (err, res, body) => {
+			if (err) {
+				console.error(err);
+			} else {
+				// console.log(body);
+				xml2js.parseString(body, {preserveChildrenOrder:true}, (err, result) => {
+					if (err) {
+						console.error(err);
+					} else {
+						try {
+							let items = result.root.information[0].category[0].info
+							for (let i = 0; i < items.length; i++) {
+								if (items[i].$.name == 'filename') {
+									console.log(`Currently playing ${items[i]._}.`);
+									resolve(items[i]._)
+								}
+								// if (items[i].$.name == 'title') {
+								// 	console.log(items[i]._);
+								// }
+							}
+						} catch (e) {
+							resolve('Unknown')
+						}
+					}
+				});
+			}
+		});
+	})
 }
 
 module.exports = {
-	vlcAPI:vlcAPI
+	vlcAPI:vlcAPI,
+	vlcGetCurrent:vlcGetCurrent
 }

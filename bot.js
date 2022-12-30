@@ -1,5 +1,6 @@
 const { Client, MessageAttachment } = require('discord.js');
-const { vlcAPI } = require('./vlc.js');
+const { vlcAPI, vlcGetCurrent } = require('./vlc.js');
+const { lookupTMDB } = require('./arrpi.js')
 require('dotenv').config();
 let discord_token = process.env.DISCORD_TOKEN
 // const { getSections,getPlaylistItems } = require('./plex.js')
@@ -17,13 +18,13 @@ const prefix = '@KMA-IMAX';
 const commands = [
 	{command:'help',desc:'Prints the help menu.'},
 	{command:'add',desc:'Add a movie to the queue.'},
-	{command:'skip',desc:'Skip the current item in the queue.'},
+	{command:'next',desc:'Skip the current item in the queue.'},
 	{command:'previous',desc:'Go back to previous item in the queue.'},
 	{command:'seek',desc:`Seek to somewhere in the current item. examples:
 	 1000 -> seek to the 1000th second
 	 +1H:2M -> seek 1 hour and 2 minutes forward
 	 -10% -> seek 10% back.`},
-	{command:'list',desc:'List available movies.'},
+	{command:'info',desc:'List current Movie/Show.'},
 	{command:'version',desc:`Prints the current version of KMA-IMAX bot. Usage: ${prefix} version`},
 ]
 
@@ -45,7 +46,7 @@ function removeMention(text) {
 
 // vlcAPI('','123456','pl_stop');
 // vlcAPI('','123456','pl_play&id=7');
-client.on('message', message => {
+client.on('message', async function (message) {
 	if (!message.content.includes('<@1058232627062124545>') && !message.content.includes('<@1058149336183230586>')){
 		return
 	}
@@ -69,19 +70,23 @@ client.on('message', message => {
 		}
 		return message.channel.send(`Ok, adding ${string}to the queue. (just kidding this feature is not done yet)`);
 	}
-	else if (args[0] === 'list') {
-		return message.channel.send(`I'm still working on this feature.`);
+	else if (args[0] === 'info') {
+		let name = await vlcGetCurrent('',process.env.VLC_PASSWORD)
+		item = await lookupTMDB(name)
+		return message.channel.send(`Current: ${item.title}\nDescription: ${item.overview}\n${item.remotePoster}`);
 	}
-	else if (args[0] === 'skip') {
-		vlcAPI('','123456','pl_next');
-		return message.channel.send('Skipping current content...');
+	else if (args[0] === 'next') {
+		let name = await vlcGetCurrent('',process.env.VLC_PASSWORD)
+		vlcAPI('',process.env.VLC_PASSWORD,'pl_next');
+		item = await lookupTMDB(name)
+		return message.channel.send(`Skipping ${item.title}...`);
 	}
 	else if (args[0] === 'seek') {
-		vlcAPI('','123456',`seek&val=${args[1]}`);
+		vlcAPI('',process.env.VLC_PASSWORD,`seek&val=${args[1]}`);
 		return message.channel.send(`Seeking to ${args[1]}.`);
 	}
 	else if (args[0] === 'previous') {
-		vlcAPI('','123456','pl_previous');
+		vlcAPI('',process.env.VLC_PASSWORD,'pl_previous');
 		return message.channel.send('Going back to previous content...');
 	}
 	else if (args[0] === 'version') {
