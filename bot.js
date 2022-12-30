@@ -1,5 +1,4 @@
-let discord_token = 'MTA1ODE0OTMzNjE4MzIzMDU4Ng.G9U-jG.IUPrMoD04Wr80ulvTDflIqI_A8TNkFPlB_9DeE'
-let plex_token = 'Q8hcuQZVNju9AzA8y_-J'
+let discord_token = 'insert discord token here'
 
 const { Client, MessageAttachment } = require('discord.js');
 const { vlcAPI } = require('./vlc.js')
