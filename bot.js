@@ -1,4 +1,4 @@
-let discord_token = 'insert discord token here'
+let discord_token = 'MTA1ODE0OTMzNjE4MzIzMDU4Ng.GM-WSv.IKqb8bBJhLxp08FfhHgWlPBxmROVj2jp8Lirmw'
 
 const { Client, MessageAttachment } = require('discord.js');
 const { vlcAPI } = require('./vlc.js')
@@ -54,8 +54,7 @@ client.on('message', message => {
 		for (let i = 1; i < args.length; i++) {
 			string += `${args[i]} `
 		}
-		queue
-		return message.channel.send(`Ok, adding ${string}to the queue.`);
+		return message.channel.send(`Ok, adding ${string}to the queue. (just kidding this feature is not done yet)`);
 	}
 	else if (args[0] === 'list') {
 		return message.channel.send(`I'm still working on this feature.`);
@@ -73,14 +72,14 @@ client.on('message', message => {
 });
 
 client.on('messageReactionAdd', react => {
-	console.log(react);
+	// console.log(react);
 	react.message.content = removeMention(react.message.content)
 	console.log(react._emoji.name);
 	console.log(react.message.content);
 });
 
 client.on('messageReactionRemove', react => {
-	console.log(react);
+	// console.log(react);
 	react.message.content = removeMention(react.message.content)
 	console.log(react._emoji.name);
 	console.log(react.message.content);
