@@ -1,7 +1,7 @@
-let discord_token = 'MTA1ODE0OTMzNjE4MzIzMDU4Ng.GM-WSv.IKqb8bBJhLxp08FfhHgWlPBxmROVj2jp8Lirmw'
-
 const { Client, MessageAttachment } = require('discord.js');
 const { vlcAPI } = require('./vlc.js')
+require('dotenv').config();
+let discord_token = process.env.DISCORD_TOKEN
 // const { getSections,getPlaylistItems } = require('./plex.js')
 
 const client = new Client();
