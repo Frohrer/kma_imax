@@ -98,7 +98,6 @@ function cleanTerm(str) {
 		} else {
 			str = splitOnNumber(str)
 		}
-		console.log(str);
 		if (str == '' || typeof str == 'undefined') {
 			console.log(str);
 		}
@@ -113,16 +112,24 @@ const lookupTMDB = async function (term) {
 	if (term == '' || typeof term == 'undefined') {
 		return {title:'Unknown',overview:'None',remotePoster:'None'}
 	}
-	let show = await lookupShow(term)
+	let show = await lookupMovie(term)
 	if (show == 'Unknown') {
-		let movie = await lookupMovie(term)
+		let movie = await lookupShow(term)
 		if (movie == 'Unknown') {
 			return {title:'Unknown',overview:'None',remotePoster:'None'}
 		} else {
-			return movie
+			if (typeof movie == 'undefined'){
+				return {title:'Unknown',overview:'None',remotePoster:'None'}
+			} else {
+				return movie
+			}
 		}
 	} else {
-		return show
+		if (typeof show == 'undefined'){
+			return {title:'Unknown',overview:'None',remotePoster:'None'}
+		} else {
+			return show
+		}
 	}
 	// lookupMovie(term)
 }
