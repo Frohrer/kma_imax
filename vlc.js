@@ -7,6 +7,11 @@ const request = require('request');
 const xml2js = require('xml2js');
 require('dotenv').config();
 
+function generateRandomNumber(n) {
+	return Math.floor(Math.random() * n) + 1;
+}
+
+
 const vlcAPI = function (username, password, command) {
 	return new Promise((resolve,reject) => {
 		const options = {
@@ -77,7 +82,105 @@ const vlcGetCurrent = function (username, password) {
 	})
 }
 
+const getRunStatus = function (username, password) {
+	return new Promise((resolve,reject) => {
+		const options = {
+			url: `http://${process.env.VLC_IP}/requests/status.xml`,
+			auth: {
+				username: username,
+				password: password
+			}
+		};
+
+		request.get(options, (err, res, body) => {
+			if (err) {
+				console.error(err);
+			} else {
+				xml2js.parseString(body, {preserveChildrenOrder:true}, (err, result) => {
+					if (err) {
+						console.error(err);
+					} else {
+						try {
+							resolve({
+								position:result.root.position[0],
+								length:result.root.length[0]
+							})
+						} catch (e) {
+							resolve('Unknown')
+						}
+					}
+				});
+			}
+		});
+	})
+}
+
+const runAd = function (username, password) {
+	return new Promise((resolve,reject) => {
+		let randomNumber = generateRandomNumber(process.env.VLC_AD_AMOUNT);
+		const options = {
+			url: `http://${process.env.VLC_IP}/requests/status.xml?command=in_play&input=${process.env.VLC_AD_FOLDER}${randomNumber}.mp4`,
+			auth: {
+				username: username,
+				password: password
+			}
+		};
+
+		request.get(options, (err, res, body) => {
+			if (err) {
+				console.error(err);
+			} else {
+				xml2js.parseString(body, {preserveChildrenOrder:true}, (err, result) => {
+					if (err) {
+						console.error(err);
+					} else {
+						try {
+							resolve(result.root.length[0])
+						} catch (e) {
+							resolve('Unknown')
+						}
+					}
+				});
+			}
+		});
+	})
+}
+
+const runContent = function (username, password) {
+	return new Promise((resolve,reject) => {
+		let randomNumber = generateRandomNumber(process.env.VLC_AD_AMOUNT);
+		const options = {
+			url: `http://${process.env.VLC_IP}/requests/status.xml?command=in_play&input=${process.env.VLC_CONTENT_FOLDER}`,
+			auth: {
+				username: username,
+				password: password
+			}
+		};
+
+		request.get(options, (err, res, body) => {
+			if (err) {
+				console.error(err);
+			} else {
+				xml2js.parseString(body, {preserveChildrenOrder:true}, (err, result) => {
+					if (err) {
+						console.error(err);
+					} else {
+						try {
+							resolve(result.root.length[0])
+						} catch (e) {
+							resolve('Unknown')
+						}
+					}
+				});
+			}
+		});
+	})
+}
+
 module.exports = {
 	vlcAPI:vlcAPI,
-	vlcGetCurrent:vlcGetCurrent
+	vlcGetCurrent:vlcGetCurrent,
+	vlcGetRunStatus:getRunStatus,
+	vlcRunAd:runAd,
+	vlcRunContent:runContent,
 }

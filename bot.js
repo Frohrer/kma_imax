@@ -1,5 +1,5 @@
 const { Client, MessageAttachment } = require('discord.js');
-const { vlcAPI, vlcGetCurrent } = require('./vlc.js');
+const { vlcAPI, vlcGetCurrent, vlcRunAd, vlcGetRunStatus, vlcRunContent } = require('./vlc.js');
 const { lookupTMDB } = require('./arrpi.js')
 require('dotenv').config();
 let discord_token = process.env.DISCORD_TOKEN
@@ -44,8 +44,35 @@ function removeMention(text) {
 	}
 }
 
-// vlcAPI('','123456','pl_stop');
-// vlcAPI('','123456','pl_play&id=7');
+function wait(n) {
+	return new Promise((resolve) => setTimeout(resolve, n * 1000));
+}
+
+function wait2(n) {
+	setTimeout(() => {
+		console.log(`${n} seconds have passed`);
+	}, n * 1000);
+}
+
+let timerId = null
+
+async function runEveryFiveSeconds() {
+	let status = await vlcGetRunStatus('',process.env.VLC_PASSWORD)
+	if (parseFloat(status.position) >= 0.99) {
+		clearInterval(timerId)
+		await vlcRunAd('',process.env.VLC_PASSWORD)
+		await wait(2)
+		let adStatus = await vlcGetRunStatus('',process.env.VLC_PASSWORD)
+		await wait(adStatus.length-1)
+		setInterval(runEveryFiveSeconds, 5000);
+	}
+}
+
+vlcRunContent('',process.env.VLC_PASSWORD)
+vlcAPI('',process.env.VLC_PASSWORD,'pl_random');
+timerId = setInterval(runEveryFiveSeconds, 5000);
+
+
 client.on('message', async function (message) {
 	if (!message.content.includes('<@1058232627062124545>') && !message.content.includes('<@1058149336183230586>')){
 		return
